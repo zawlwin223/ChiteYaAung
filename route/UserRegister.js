@@ -11,5 +11,6 @@ router.get("/",()=>{
 router.post("/register",Validate_Schema(User_Schema),user.register)
 router.post("/login",user.login)
 router.get("/active",user.active)
+router.get("/user",user.all_user)
 
 module.exports = router;

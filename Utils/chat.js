@@ -1,8 +1,8 @@
 let helper = require("./helper");
 let message = require("../model/Message")
+let unread = require("../model/Unread_msg")
+
 let live_user =async (socket,user)=>{
-    // console.log(user)
-    // await helper.redis_set(socket.id,user._id)
     await helper.redis_set(user._id,user)     
 }
 let initialize = (io,socket)=>{
@@ -13,7 +13,21 @@ let initialize = (io,socket)=>{
     socket.on("messageFromClient",data=>{
         incomming_message(io,socket,data)
     })
+    socket.on("unreadmessage",()=>[
+        unread_msg(socket)
+    ])
 }
+let unread_msg =async (socket)=>{
+    let result = await unread.find({to:socket.user._id})
+   
+    if(result.length>0){
+       result.forEach(async(val)=>{
+        await unread.findByIdAndDelete(val._id)
+       })
+    }
+    socket.emit("unread",result)
+}
+
 let incomming_message = async (io,socket,data)=>{
     let msg_data = await new message(data).save()
     let msg = await message.findById(msg_data._id).populate("from to","name _id")
@@ -27,7 +41,12 @@ let incomming_message = async (io,socket,data)=>{
             next(new Error("Socket Error"))
         }
     }else{
-
+       
+        let from = msg.from._id;
+        let to = msg.to._id;
+        let message = msg_data;
+        await unread({from:from,to:to,message:message.message}).save()
+        
     }
     socket.emit("message",msg)
 }

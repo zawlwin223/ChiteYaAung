@@ -7,7 +7,7 @@ const user = require("./route/UserRegister")
 const fileupload = require ("express-fileupload")
 const mongoose = require ("mongoose");
 const helper = require("./Utils/helper");
-const { decode } = require("punycode");
+// const { decode } = require("punycode");
 mongoose.connect('mongodb://localhost:27017/Social_Media')
   .then(() => console.log('Connected!'));
 

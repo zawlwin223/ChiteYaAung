@@ -9,7 +9,7 @@ const register = async (req,res,next)=>{
    let save = new user(req.body)
    try{
     let result =await save.save()
-    console.log(result)
+    res.send(result)
 
    }catch(e){
     next(new Error(e))
@@ -23,7 +23,7 @@ const login = async(req,res,next)=>{
      console.log(password)
      if(password==true){
       let plain_obj = name.toObject();
-      var token = jwt.sign(plain_obj, process.env.Private_Key);
+      let token = jwt.sign(plain_obj, process.env.Private_Key);
       
       plain_obj.token = token;
       console.log(plain_obj)
@@ -51,5 +51,8 @@ const active =async (req,res,next)=>{
   }
  res.send(active_user)
 }
-
-module.exports = {register,login,active}
+const all_user = async (req,res,next)=>{
+   let result = await user.find()
+   res.send(result)
+}
+module.exports = {register,login,active,all_user}
