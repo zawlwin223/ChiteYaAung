@@ -6,6 +6,7 @@ const User_Schema = joi.object({
     password:joi.string().min(5),
     age:joi.number().required(),
     gender:joi.string().required(),
+    image:joi.string().required()
 })
 
 module.exports = {User_Schema}

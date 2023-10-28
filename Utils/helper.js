@@ -25,5 +25,6 @@ module.exports={
         // let result = await redis.get(key)
        let user = await redis.get(key)
        return user;
-    }
+    },
+    
 }

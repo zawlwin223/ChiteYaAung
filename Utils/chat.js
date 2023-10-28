@@ -16,7 +16,19 @@ let initialize = (io,socket)=>{
     socket.on("unreadmessage",()=>[
         unread_msg(socket)
     ])
+    socket.on("loadmessage",()=>{
+        load_msg(socket)
+    })
 }
+let load_msg = async (socket)=>{
+    console.log(socket.user._id)
+    let result = await message.find({$or:[
+     {"from":socket.user._id},
+     {"to":socket.user._id}
+    ]}).populate("from to","name _id")
+   socket.emit("loadmessage",result)
+}
+
 let unread_msg =async (socket)=>{
     let result = await unread.find({to:socket.user._id})
    

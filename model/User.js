@@ -7,6 +7,7 @@ const User_Schema = new Schema({
     password:{type:String,require:true,unique:true},
     age:{type:Number,require:true},
     gender:{type:String,enum:["Male","Female"],default:"Male"},
+    image:{type:String,require:true},
     create:{type:Date,default:Date.now}
 })
 

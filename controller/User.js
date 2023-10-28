@@ -2,6 +2,7 @@ const user = require("../model/User")
 const helper = require("../Utils/helper")
 const jwt = require("jsonwebtoken")
 
+
 const register = async (req,res,next)=>{
    let hsh_password =await helper.password_hash(req.body.password);
    delete req.body.password
@@ -29,6 +30,7 @@ const login = async(req,res,next)=>{
       console.log(plain_obj)
       await helper.redis_set(plain_obj._id,plain_obj)
       await helper.redis_get(plain_obj._id)
+      res.cookie("token","hello I am token")
       res.send(plain_obj)
      
      }else{
@@ -51,8 +53,21 @@ const active =async (req,res,next)=>{
   }
  res.send(active_user)
 }
+
 const all_user = async (req,res,next)=>{
    let result = await user.find()
+   res.cookie("Hello","Hi")
    res.send(result)
 }
-module.exports = {register,login,active,all_user}
+const edit = async (req,res,next)=>{
+   let current_user = await user.findById(req.params.id)
+   
+   if(current_user){
+    await user.findByIdAndUpdate(current_user._id,req.body)
+     let result = await user.findById(current_user._id)
+      res.send(result)
+   }else{
+      next (new Error("Id is incorrect"))
+   }
+}
+module.exports = {register,login,active,all_user,edit}
