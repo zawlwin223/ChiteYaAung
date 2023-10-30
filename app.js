@@ -2,7 +2,11 @@ require("dotenv").config()
 const express = require("express")
 const app = express()
 const server = require('http').createServer(app);
-const io = require("socket.io")(server)
+const io = require("socket.io")(server,{
+  cors:{
+    origin:"http://localhost:3000"
+  }
+})
 const user = require("./route/UserRegister")
 const fileupload = require ("express-fileupload")
 const mongoose = require ("mongoose");
@@ -12,7 +16,7 @@ const cookie_parser = require ("cookie-parser")
 // const { decode } = require("punycode");
 
 app.use(cors({
-  origin: "http://localhost:5500",
+  origin: "http://localhost:3000",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials:true,    
   

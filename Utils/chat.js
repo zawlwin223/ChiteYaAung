@@ -16,16 +16,21 @@ let initialize = (io,socket)=>{
     socket.on("unreadmessage",()=>[
         unread_msg(socket)
     ])
-    socket.on("loadmessage",()=>{
-        load_msg(socket)
+    socket.on("loadmessage",(data)=>{
+        load_msg(socket,data)
+    })
+    socket.on("getAllMessage",()=>{
+        get_all_msg()
     })
 }
-let load_msg = async (socket)=>{
-    console.log(socket.user._id)
-    let result = await message.find({$or:[
-     {"from":socket.user._id},
-     {"to":socket.user._id}
-    ]}).populate("from to","name _id")
+let load_msg = async (socket,data)=>{
+
+    
+    let result = await message.find({
+     "from":socket.user._id,
+     "to":data.to
+    }).populate("from to","name _id")
+    console.log(result)
    socket.emit("loadmessage",result)
 }
 
@@ -38,6 +43,11 @@ let unread_msg =async (socket)=>{
        })
     }
     socket.emit("unread",result)
+}
+
+let get_all_msg = async ()=>{
+    let result = await message.find()
+    socket.emit("getAllmsg",result)
 }
 
 let incomming_message = async (io,socket,data)=>{
