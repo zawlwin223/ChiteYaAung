@@ -24,8 +24,7 @@ let initialize = (io,socket)=>{
     })
 }
 let load_msg = async (socket,data)=>{
-
-    
+     
     let result = await message.find({
      "from":socket.user._id,
      "to":data.to
