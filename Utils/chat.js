@@ -26,8 +26,17 @@ let initialize = (io,socket)=>{
 let load_msg = async (socket,data)=>{
      
     let result = await message.find({
-     "from":socket.user._id,
-     "to":data.to
+        $or:[
+            {
+                "from":socket.user._id,
+                "to":data.to
+            },
+            {
+                "from":data.to,
+                "to":socket.user._id
+            }
+        ]
+   
     }).populate("from to","name _id")
     console.log(result)
    socket.emit("loadmessage",result)
