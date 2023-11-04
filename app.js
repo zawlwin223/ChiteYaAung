@@ -14,7 +14,7 @@ const helper = require("./Utils/helper");
 const cors = require("cors")
 const cookie_parser = require ("cookie-parser")
 // const { decode } = require("punycode");
-
+app.use(express.static('public'))
 app.use(cors({
   origin: "http://localhost:3000",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -24,7 +24,7 @@ app.use(cors({
 
 mongoose.connect('mongodb://localhost:27017/Social_Media')
   .then(() => console.log('Connected!'));
-app.use(express.static('public'))
+
 app.use(cookie_parser())
 app.use(express.json())
 app.use(fileupload())

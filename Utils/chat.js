@@ -37,7 +37,7 @@ let load_msg = async (socket,data)=>{
             }
         ]
    
-    }).populate("from to","name _id")
+    }).populate("from to","name _id image")
     console.log(result)
    socket.emit("loadmessage",result)
 }
