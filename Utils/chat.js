@@ -1,8 +1,8 @@
-const helper = require("./helper");
-const Message = require("../model/Message");
-const unread = require("../model/Unread_msg");
+const helper = require('./helper');
+const Message = require('../model/Message');
+const unread = require('../model/Unread_msg');
 // my way
-const User = require("../model/User");
+const User = require('../model/User');
 
 let live_user = async (socket, user) => {
   await helper.redis_set(user._id, user);
@@ -13,7 +13,7 @@ let initialize = (io, socket) => {
   user.socket_id = socket.id;
   socket.user = user;
 
-  live_user(socket, user);
+  // live_user(socket, user);
 
   // socket.on("messageFromClient", (data) => {
   //   incomming_message(io, socket, data);
@@ -21,7 +21,7 @@ let initialize = (io, socket) => {
 
   // socket.on("unreadmessage", (msg) => unread_msg(socket, msg));
 
-  socket.on("loadmessage", (data) => {
+  socket.on('loadmessage', (data) => {
     load_msg(socket, data);
   });
 
@@ -31,16 +31,25 @@ let initialize = (io, socket) => {
 
   // my way
   // Thinking about how to send messages between users
-  socket.on("startsChattingWith", (partnerID) =>
+  socket.on('startsChattingWith', (partnerID) =>
     handleChatting(partnerID, user)
   );
 
-  socket.on("sendAMessage", (message) => {
+  socket.on('sendAMessage', (message) => {
     handleSendingMessage(io, socket, message);
   });
 
-  socket.on("loadAllUnreadMessages", (userID) => {
+  socket.on('loadAllUnreadMessages', (userID) => {
     handleLoadingAllUnreadMessages(socket, userID);
+  });
+
+  socket.on('user-connect', () => {
+    handleUserStatus(io, socket, user, true);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User is away from the chat.');
+    handleUserStatus(io, socket, user, false);
   });
 };
 
@@ -56,15 +65,15 @@ let load_msg = async (socket, data) => {
         to: socket.user._id,
       },
     ],
-  }).populate("from to", "name _id");
+  }).populate('from to', 'name _id');
 
   messages.forEach((message) => {
     message.unread = false;
     message.save();
   });
 
-  socket.emit("loadmessage", messages);
-  socket.emit("allUnreadMessages", []);
+  socket.emit('loadmessage', messages);
+  socket.emit('allUnreadMessages', []);
 };
 
 // let unread_msg = async (socket, msg) => {
@@ -126,7 +135,7 @@ async function handleChatting(partnerID, user) {
     { _id: user._id },
     { currentChattingWith: partner._id },
     { new: true }
-  ).then(() => console.log("User is successfully updated."));
+  ).then(() => console.log('User is successfully updated.'));
 
   await helper.redis_set(user._id, user);
 }
@@ -135,31 +144,47 @@ async function handleSendingMessage(io, socket, message) {
   const receiver = JSON.parse(await helper.redis_get(message.to));
   const sender = JSON.parse(await helper.redis_get(message.from));
   const receiverSocketID = receiver.socket_id;
-  const receiverSocket = io.of("/chat").to(receiverSocketID);
+  const receiverSocket = io.of('/chat').to(receiverSocketID);
 
-  if (!receiverSocket) return next(new Error("Socket Error"));
+  if (!receiverSocket) return next(new Error('Socket Error'));
 
   const savedMessage = await new Message(message).save();
-  const populatedMessage = await savedMessage.populate("from to", "name _id");
+  const populatedMessage = await savedMessage.populate('from to', 'name _id');
 
   if (receiver.currentChattingWith === sender._id) {
-    console.log("Chatting together");
-    receiverSocket.emit("receiveAMessage", populatedMessage);
+    console.log('Chatting together');
+    receiverSocket.emit('receiveAMessage', populatedMessage);
   } else {
-    console.log("Chatting with other one");
-    receiverSocket.emit("newUnreadMessage", {
+    console.log('Chatting with other one');
+    receiverSocket.emit('newUnreadMessage', {
       sender: sender,
       message: populatedMessage.message,
     });
   }
 
   // Sending to the sender back for showing sender's message
-  socket.emit("receiveAMessage", populatedMessage);
+  socket.emit('receiveAMessage', populatedMessage);
 }
 
 async function handleLoadingAllUnreadMessages(socket, userID) {
   const allUnreadMessages = await Message.find({ to: userID, unread: true });
-  socket.emit("allUnreadMessages", allUnreadMessages);
+  socket.emit('allUnreadMessages', allUnreadMessages);
+}
+
+async function handleUserStatus(io, socket, user, status) {
+  user.isActive = status;
+  await helper.redis_set(user._id, user);
+  await User.findOneAndUpdate(
+    { _id: user._id },
+    { isActive: status },
+    { new: true }
+  ).then(() => console.log('User is successfully updated to active.'));
+
+  io.of('/chat').emit('userStatus', {
+    activeUserID: user._id,
+    status: status,
+    activeUserName: user.name,
+  });
 }
 
 module.exports = { initialize };

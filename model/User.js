@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const User_Schema = new Schema({
@@ -6,15 +6,16 @@ const User_Schema = new Schema({
   ph_no: { type: String, require: true },
   password: { type: String, require: true, unique: true },
   age: { type: Number, require: true },
-  gender: { type: String, enum: ["Male", "Female"], default: "Male" },
+  gender: { type: String, enum: ['Male', 'Female'], default: 'Male' },
   image: { type: String, require: true },
   create: { type: Date, default: Date.now },
+  isActive: { type: Boolean, default: false },
   currentChattingWith: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     default: null,
   },
 });
 
-const User = mongoose.model("User", User_Schema);
+const User = mongoose.model('User', User_Schema);
 module.exports = User;
