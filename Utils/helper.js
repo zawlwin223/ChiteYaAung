@@ -1,7 +1,7 @@
-const Redis = require("ioredis");
+const Redis = require('ioredis');
 const redis = new Redis();
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 module.exports = {
   password_hash: async (password) => {
@@ -18,7 +18,7 @@ module.exports = {
   },
   redis_set: async (key, value) => {
     let result = await redis.set(key, JSON.stringify(value));
-    console.log(result);
+    console.log(`file: helper.js:21 ~ redis_set: ~ result:`, result);
   },
   redis_get: async (key) => {
     // let result = await redis.get(key)
